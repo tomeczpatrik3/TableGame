@@ -3,13 +3,21 @@ package tablegame.model;
 import static tablegame.model.Action.*;
 
 public class BaseEntity implements BaseInterface {
+    //A robot nevének tárolására:
     private String name;
+    //A robot utolsó végrehajtott akciója:
     private Action lastAction;
+    //A robot utolsó pozíciója (a mostani előtti):
     private Position lastPos;
+    //A robot jelenlegi pozíciója:
     private Position pos;
+    //Az aréna, amiben a robot szerepel:
     private Arena arena;
+    //A robot maximális páncélja:
     private int maxArmor;
+    //A robot aktuális páncélja:
     private int actualArmor;
+    //A robot sebzése:
     private int damage;
     
     public BaseEntity(String name, Arena arena, Position pos, int armor) {
@@ -28,103 +36,194 @@ public class BaseEntity implements BaseInterface {
         this.pos = new Position(x,y);
     }
     
+    /*
+        Név lekérdezése
+    */
     @Override
     public String getName() {
         return this.name;
     }
     
+    /*
+        Név beállítása
+    */
     @Override
     public void setName(String name) {
         this.name = name;
     }
     
+    /*
+        Aktuális pozíció lekérdezése
+    */
     @Override
-    public Position getPosition() {
+    public Position getActualPosition() {
         return this.pos;
     }
     
+    /*
+        Aktuális pozíció beállítása
+    */
     @Override
-    public void setPosition(int x, int y) {
+    public void setActualPosition(int x, int y) {
         this.pos.setX(x);
         this.pos.setY(y);
     }
     
+    /*
+        Utolsó pozíció lekérdezése
+    */
+    @Override
+    public Position getLastPosition() {
+        return this.lastPos;
+    }
+    
+    /*
+        Utolsó pozíció beállítása
+    */
+    @Override
+    public void setLastPosition(int x, int y) {
+        this.lastPos.setX(x);
+        this.lastPos.setY(y);
+    }
+    
+    /*
+        Utolsó akció lekérdezése
+    */
+    @Override
+    public Action getLastAction() {
+        return this.lastAction;
+    }
+    
+    /*
+        Utolsó akció beállítása
+    */
+    @Override
+    public void setLastAction(Action act) {
+        this.lastAction = act;
+    }
+    
+    /*
+        Maximum páncél lekérdezése
+    */
     @Override
     public int getMaxArmor() {
         return this.maxArmor;
     }
-            
+     
+    /*
+        Maximum páncél beállítása
+    */
     @Override
     public void setMaxArmor(int armor) {
         this.maxArmor = armor;
     }
     
+    /*
+        Jelenlegi páncél lekérdezése
+    */
     @Override
     public int getActualArmor() {
         return this.actualArmor;
     }
-            
+    
+    /*
+        Jelenlegi páncél beállítása, feltéve ha
+        nem haladja meg a maximális páncélt
+    */
     @Override
     public void setActualArmor(int armor) {
-        this.actualArmor = armor;
+        if (armor <= this.maxArmor )
+            this.actualArmor = armor;
     }
     
+    /*
+        Sebzés lekérdezése
+    */
     @Override
     public int getDamage(){
         return this.damage;
     }
     
+    /*
+        Sebzés beállítása
+    */
     @Override
     public void setDamage(int dmg){
         this.damage = dmg;
     }
     
+    /*
+        Aréna méretének lekérdezése
+    */
     @Override
     public int[] getArenaSize() {
         return this.arena.getSize();
     }
     
+    /*
+        Támadás egy meghatározott irányba
+    */
     @Override
-    public void attack(){
+    public void attack(Direction direction){
+        performMove(direction);
         this.lastAction = ATTACK;
     }
     
+    /*
+        Védekezés egy meghatározott irányba
+    */
     @Override
-    public void defend(){
+    public void defend(Direction direction){
+        performMove(direction);
         this.lastAction = DEFEND;
     }
     
+    /*
+        Várakozás az adott körben
+    */
     @Override
     public void waitNextRound(){
+        this.lastPos = this.pos;
         this.lastAction = WAIT;
     }
     
     /*
-        X koord.: vízszintes mozgatás
-        Y koord.: függőleges mozgatás
+        Lépés egy meghatározott irányba
     */
     @Override
     public void move(Direction direction) {
+        performMove(direction);
         this.lastAction = MOVE;
+    }
+    
+    /*
+        Az attack, move és defend metódusok kódismétlésének elkerülése végett
+        Előző pozíció eltárolása, majd lépés vágrehajtása
+        Ha a lépés helytelen (nem esik bele az arénába), akkor pozíció visszaállítása
+        a "lastPos" adattag segítségével.
+    */
+    @Override
+    public void performMove(Direction direction) {
+        this.lastPos = this.pos;
         
         switch (direction) {
             case EAST: 
-                if (this.getPosition().getY()+1 < this.arena.getSize()[1])
-                    this.pos = new Position(this.getPosition().getX(), this.getPosition().getY()+1);
+                this.pos = new Position(this.getActualPosition().getX(), this.getActualPosition().getY()+1);
                 break;
             case WEST: 
-                if (this.getPosition().getY()-1 >= 0)
-                    this.pos = new Position(this.getPosition().getX(), this.getPosition().getY()-1);
+                this.pos = new Position(this.getActualPosition().getX(), this.getActualPosition().getY()-1);
                 break;
             case NORTH:
-                if (this.getPosition().getX()-1 >= 0)
-                    this.pos = new Position(this.getPosition().getX()-1, this.getPosition().getY());
+                this.pos = new Position(this.getActualPosition().getX()-1, this.getActualPosition().getY());
                 break;
             case SOUTH:
-                if (this.getPosition().getX()+1 < this.arena.getSize()[0])
-                    this.pos = new Position(this.getPosition().getX()+1, this.getPosition().getY());
+                this.pos = new Position(this.getActualPosition().getX()+1, this.getActualPosition().getY());
                 break;
         }
+       
+        if ( !this.arena.isValidPosition(this.pos) ) {
+            this.pos = this.lastPos;
+        } 
     }
     
     @Override
@@ -139,7 +238,7 @@ public class BaseEntity implements BaseInterface {
         Egy adott robot pozíciójának lekérdezése:
     */
     public static Position getEnemysPostion(BaseEntity entity) {
-        return entity.getPosition();
+        return entity.getActualPosition();
     }
     
     /*
@@ -153,6 +252,6 @@ public class BaseEntity implements BaseInterface {
         Robotok pozíciójának ellenőrzése:
     */
     public static boolean areOnTheSameField(BaseEntity a, BaseEntity b) {
-        return ( a.getPosition().equals(b.getPosition()) );
+        return ( a.getActualPosition().equals(b.getActualPosition()) );
     }
 }

@@ -1,14 +1,25 @@
 package tablegame.model;
 
+/*
+    A megvalósításra váró függvények.
+    A függvények leírása megtalálható a BaseEntity osztályban
+*/
 public abstract interface BaseInterface {
-    
     public abstract String getName();
     
     public abstract void setName(String name);
     
-    public abstract Position getPosition();
+    public abstract Position getActualPosition();
     
-    public abstract void setPosition(int x, int y);
+    public abstract void setActualPosition(int x, int y);
+    
+    public abstract Position getLastPosition();
+    
+    public abstract void setLastPosition(int x, int y);
+    
+    public abstract Action getLastAction();
+    
+    public abstract void setLastAction(Action act);
     
     public abstract int getMaxArmor();
     
@@ -22,13 +33,15 @@ public abstract interface BaseInterface {
     
     public abstract void setDamage(int dmg);
     
-    public abstract void attack();
+    public abstract void attack(Direction direction);
     
-    public abstract void defend();
+    public abstract void defend(Direction direction);
     
     public abstract void waitNextRound();
     
     public abstract void move(Direction direction);
+    
+    public abstract void performMove(Direction direction);
     
     public abstract int[] getArenaSize();
     

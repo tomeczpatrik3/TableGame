@@ -5,10 +5,10 @@ import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.graphics.TextGraphics;
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
 import com.googlecode.lanterna.terminal.Terminal;
+import static tablegame.model.Direction.*;
 import java.io.IOException;
 import java.lang.reflect.*;
 import java.util.Random;
-import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 import tablegame.model.Action;
 import static tablegame.model.Action.*;
@@ -40,10 +40,6 @@ public class TableGame {
             String bClassName = args[3];
             int maxRound = Integer.parseInt(args[4]);
             
-            /*
-                Scanner léterhozása:
-            */
-            Scanner sc = new Scanner(System.in);
             /*
                 Aréna inicializálása:
             */
@@ -79,7 +75,7 @@ public class TableGame {
             */
 
             DefaultTerminalFactory defaultTerminalFactory = new DefaultTerminalFactory();
-            defaultTerminalFactory.setSwingTerminalFrameTitle("Robot Game 0.1");
+            defaultTerminalFactory.setSwingTerminalFrameTitle("Table Game 0.1");
             Terminal terminal = null;
             try {
                 terminal = defaultTerminalFactory.createTerminal();
@@ -94,10 +90,11 @@ public class TableGame {
                 int roundCnt = 0;
                 
                 while (roundCnt <= maxRound) {
+                    System.out.println("----- " + roundCnt + ". kör: -----");
                     //Lépések, logic:
                     if (roundCnt != 0) {
-                        generateRndAction(aClass, aRobot);
-                        generateRndAction(bClass, bRobot);
+                        generateRndAction(aRobot);
+                        generateRndAction(bRobot);
                     }
                     
                     //Ellenorzés, hogy egy mezon allnak-e?
@@ -126,7 +123,9 @@ public class TableGame {
                             Várakozás        Támadás         B visszakerül a helyére,  páncél levonás A-nál                           
                         */
                         
-                        
+                        if ( ((BaseEntity)aRobot).getLastAction() == MOVE && ((BaseEntity)aRobot).getLastAction() == MOVE ) {
+                            
+                        }
                     }
                     
                     textGraphics.putString(1, 1, roundCnt + ". kör:", SGR.BOLD);
@@ -136,9 +135,9 @@ public class TableGame {
                     for (int i=0; i<n+2; i++) {
                         terminal.putCharacter(' ');
                         for (int j=0; j<m+2; j++) {
-                            if (getPosition(aClass, aRobot).getX()+1 == i && getPosition(aClass, aRobot).getY()+1 == j)
+                            if ( ((BaseEntity)aRobot).getActualPosition().getX()+1 == i && ((BaseEntity)aRobot).getActualPosition().getY()+1 == j)
                                 terminal.putCharacter('A');
-                            else if (getPosition(bClass, bRobot).getX()+1 == i && getPosition(bClass, bRobot).getY()+1 == j)
+                            else if (((BaseEntity)bRobot).getActualPosition().getX()+1 == i && ((BaseEntity)bRobot).getActualPosition().getY()+1 == j)
                                 terminal.putCharacter('B');
                             else if ( i==0 || j==0 || i==n+1 || j==m+1)
                                 terminal.putCharacter('#');
@@ -149,10 +148,10 @@ public class TableGame {
                     }
                     
                     textGraphics.putString( 1 , n+6, "\"A\" robot: " + aClassName + ".class", SGR.BOLD);
-                    textGraphics.putString( 1 , n+7, "Páncél: " + getActualArmor(aClass, aRobot) + "/" + getMaxArmor(aClass, aRobot), SGR.BOLD);
+                    textGraphics.putString( 1 , n+7, "Páncél: " + ((BaseEntity)aRobot).getActualArmor() + "/" + ((BaseEntity)aRobot).getMaxArmor(), SGR.BOLD);
                     
                     textGraphics.putString( 1 , n+9, "\"B\" robot: " + bClassName + ".class", SGR.BOLD);
-                    textGraphics.putString( 1 , n+10, "Páncél: " + getActualArmor(bClass, bRobot) + "/" + getMaxArmor(bClass, bRobot), SGR.BOLD);
+                    textGraphics.putString( 1 , n+10, "Páncél: " + ((BaseEntity)bRobot).getActualArmor() + "/" + ((BaseEntity)bRobot).getMaxArmor(), SGR.BOLD);
 
                     terminal.flush();   
 
@@ -160,6 +159,7 @@ public class TableGame {
                     
                     //Sleep:
                     TimeUnit.SECONDS.sleep(5);
+                    System.out.println();
                 }
                 
             } catch (IOException ex) {
@@ -206,10 +206,37 @@ public class TableGame {
         }         
     }
     
-    public static void move(Class clazz, Object obj, Direction direction) {
+    public static void callMove(Class clazz, Object obj, Direction direction) {
         try {
             Method move = clazz.getMethod("move", new Class[]{Direction.class});
             move.invoke(obj, direction);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }         
+    }
+    
+    public static void callAttack(Class clazz, Object obj, Direction direction) {
+        try {
+            Method attack = clazz.getMethod("attack", new Class[]{Direction.class});
+            attack.invoke(obj, direction);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }         
+    }
+    
+    public static void callDefend(Class clazz, Object obj, Direction direction) {
+        try {
+            Method defend = clazz.getMethod("defend", new Class[]{Direction.class});
+            defend.invoke(obj, direction);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }         
+    }
+    
+    public static void callWait(Class clazz, Object obj) {
+        try {
+            Method wait = clazz.getMethod("waitNextRound", new Class[]{});
+            wait.invoke(obj, null);
         } catch (Exception e) {
             e.printStackTrace();
         }         
@@ -226,7 +253,11 @@ public class TableGame {
        
     }
     
-    public static void performAction(Action action, Class clazz, Object obj) {
+    /*
+        A paraméterben megadott akció végrehajtása az adott robottal
+        (mj.: Az akció iránya véletlenszerűen generált)
+    */
+    public static void performAction(Action action, Object robot) {
         /*
             Cselekvések: 
                 MOVE direction - mozgás adott irányban
@@ -234,46 +265,104 @@ public class TableGame {
                 DEFEND direction - védekezés adott irányban
                 WAIT - várakozás a következő körig
         */
-        switch ( action ) {
-            case MOVE:
-                System.out.println("MOVE");
-                break;
-            case ATTACK:
-                System.out.println("ATTACK");
-                break;
-            case DEFEND:
-                System.out.println("DEFEND");
-                break;
-            case WAIT:
-                System.out.println("WAIT");
-                break;
-            default:
-                System.err.println("Nem létező opció!\nVárakozás a következő körig");
-        }
-    }
-    
-    public static void generateRndAction(Class clazz, Object obj) {
         /*
             Rnd generátor létrehozása:
         */
         Random rnd = new Random();
         int rand = rnd.nextInt(4);
+        switch ( action ) {
+            case MOVE:
+                switch ( rand ) {
+                    case 0:
+                        System.out.println("\tLépés felfelé (ha lehetséges)");
+                        ((BaseEntity)robot).move(NORTH);
+                        break;
+                    case 1:
+                        System.out.println("\tLépés lefelé (ha lehetséges)");
+                        ((BaseEntity)robot).move(SOUTH);                       
+                        break;
+                    case 2:
+                        System.out.println("\tLépés jobbra (ha lehetséges)");
+                        ((BaseEntity)robot).move(EAST);
+                        break;
+                    case 3:
+                        System.out.println("\tLépés balra (ha lehetséges)");
+                        ((BaseEntity)robot).move(WEST);                       
+                        break;
+                }
+                break;
+            case ATTACK:
+                switch ( rand ) {
+                    case 0:
+                        System.out.println("\tTámadás felfelé (ha lehetséges)");
+                        ((BaseEntity)robot).attack(NORTH);   
+                        break;
+                    case 1:
+                        System.out.println("\tTámadás lefelé (ha lehetséges)");
+                        ((BaseEntity)robot).attack(SOUTH);                         
+                        break;
+                    case 2:
+                        System.out.println("\tTámadás jobbra (ha lehetséges)");
+                        ((BaseEntity)robot).attack(EAST);  
+                        break;
+                    case 3:
+                        System.out.println("\tTámadás balra (ha lehetséges)");
+                        ((BaseEntity)robot).attack(WEST);                       
+                        break;
+                }
+                break;
+            case DEFEND:
+                switch ( rand ) {
+                    case 0:
+                        System.out.println("\tVédekezés felfelé (ha lehetséges)");
+                        ((BaseEntity)robot).defend(NORTH);  
+                        break;
+                    case 1:
+                        System.out.println("\tVédekezés lefelé (ha lehetséges)");
+                        ((BaseEntity)robot).defend(SOUTH);                        
+                        break;
+                    case 2:
+                        System.out.println("\tVédekezés jobbra (ha lehetséges)");
+                        ((BaseEntity)robot).defend(EAST);  
+                        break;
+                    case 3:
+                        System.out.println("\tVédekezés balra (ha lehetséges)");
+                        ((BaseEntity)robot).defend(WEST);                       
+                        break;
+                }
+                break;
+            case WAIT:
+                System.out.println("\tVárakozás");
+                ((BaseEntity)robot).waitNextRound();
+                break;
+            default:
+                System.err.println("Nem létező opció!\nVárakozás a következő körig");
+                ((BaseEntity)robot).waitNextRound();
+        }
+    }
+    
+    /*
+        A paraméterben megadott robothoz véletlen akció generálása:
+    */
+    public static void generateRndAction(Object robot) {
+        /*
+            Rnd generátor létrehozása:
+        */
+        Random rnd = new Random();
+        int rand = rnd.nextInt(4);
+        System.out.println( ((BaseEntity)robot).getName() + " robot lépése: " );
         switch (rand) {
             case 0:
-                System.out.println( callGetName(clazz,obj) + " robot lépése: " );
-                performAction(MOVE, clazz, obj);
+                performAction(MOVE, robot);
                 break;
             case 1:
-                System.out.println( callGetName(clazz,obj) + " robot lépése: " );
-                performAction(ATTACK, clazz, obj);
+                performAction(ATTACK, robot);
                 break;
             case 2:
-                System.out.println( callGetName(clazz,obj) + " robot lépése: " );
-                performAction(DEFEND, clazz, obj);
+                performAction(DEFEND, robot);
                 break;
             case 3:
-                System.out.println( callGetName(clazz,obj) + " robot lépése: " );
-                performAction(WAIT, clazz, obj);
+                performAction(WAIT, robot);
                 break;              
         }
         
