@@ -45,5 +45,11 @@ public abstract interface BaseInterface {
     
     public abstract int[] getArenaSize();
     
+    public abstract void restorePosition();
+    
+    public abstract void sufferDmg(int dmg);
+    
+    public abstract boolean getStatus();
+    
     public abstract void whoAmI();
 }

@@ -19,6 +19,8 @@ public class BaseEntity implements BaseInterface {
     private int actualArmor;
     //A robot sebzése:
     private int damage;
+    //A robot státusza:
+    private boolean isAlive;
     
     public BaseEntity(String name, Arena arena, Position pos, int armor) {
         this.name = name;
@@ -26,6 +28,7 @@ public class BaseEntity implements BaseInterface {
         this.maxArmor = armor;
         this.actualArmor = armor;
         this.pos = pos;
+        this.isAlive = true;
     }
     
     public BaseEntity(String name, Arena arena, int x, int y, int armor) {
@@ -34,6 +37,7 @@ public class BaseEntity implements BaseInterface {
         this.maxArmor = armor;
         this.actualArmor = armor;
         this.pos = new Position(x,y);
+        this.isAlive = true;
     }
     
     /*
@@ -226,6 +230,32 @@ public class BaseEntity implements BaseInterface {
         } 
     }
     
+    /*
+        Pozíció visszaállítása
+    */
+    @Override
+    public void restorePosition() {
+        this.pos = this.lastPos;
+    }
+    
+    /*
+        Levonás a páncélból, ha páncél<=0, akkor a robot meghalt
+    */
+    @Override
+    public void sufferDmg(int dmg) {
+        this.actualArmor = this.actualArmor-dmg;
+        if (this.actualArmor <= 0)
+            this.isAlive = false;
+    }
+    
+    /*
+        Státusz lekérdezése:
+    */
+    @Override
+    public boolean getStatus() {
+        return this.isAlive;
+    }
+    
     @Override
     public void whoAmI(){
         System.out.println("I am an animal!");
@@ -254,4 +284,5 @@ public class BaseEntity implements BaseInterface {
     public static boolean areOnTheSameField(BaseEntity a, BaseEntity b) {
         return ( a.getActualPosition().equals(b.getActualPosition()) );
     }
+    
 }

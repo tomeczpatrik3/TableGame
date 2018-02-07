@@ -88,8 +88,11 @@ public class TableGame {
 
                 //Kör számláló inicializálása:
                 int roundCnt = 0;
+                boolean hasWinner = false;
                 
-                while (roundCnt <= maxRound) {
+                while (!hasWinner && roundCnt <= maxRound) {
+                    terminal.clearScreen();
+                    
                     System.out.println("----- " + roundCnt + ". kör: -----");
                     //Lépések, logic:
                     if (roundCnt != 0) {
@@ -123,9 +126,62 @@ public class TableGame {
                             Várakozás        Támadás         B visszakerül a helyére,  páncél levonás A-nál                           
                         */
                         
+                        System.out.println("A két robot azonos mezőre került!");
+                        
                         if ( ((BaseEntity)aRobot).getLastAction() == MOVE && ((BaseEntity)aRobot).getLastAction() == MOVE ) {
-                            
+                            ((BaseEntity)aRobot).restorePosition();
+                            ((BaseEntity)bRobot).restorePosition();
                         }
+                        else if ( (((BaseEntity)aRobot).getLastAction() == MOVE && ((BaseEntity)aRobot).getLastAction() == DEFEND ) 
+                            || (((BaseEntity)aRobot).getLastAction() == DEFEND && ((BaseEntity)aRobot).getLastAction() == MOVE )){
+                            ((BaseEntity)aRobot).restorePosition();
+                            ((BaseEntity)bRobot).restorePosition();
+                        }
+                        else if ( ((BaseEntity)aRobot).getLastAction() == MOVE && ((BaseEntity)aRobot).getLastAction() == WAIT ) {
+                            ((BaseEntity)aRobot).restorePosition();
+                        }
+                        else if ( ((BaseEntity)aRobot).getLastAction() == MOVE && ((BaseEntity)aRobot).getLastAction() == ATTACK ) {
+                            ((BaseEntity)aRobot).restorePosition();
+                            ((BaseEntity)bRobot).restorePosition();
+                            ((BaseEntity)aRobot).sufferDmg(1);
+                        }
+                        else if ( ((BaseEntity)aRobot).getLastAction() == ATTACK && ((BaseEntity)aRobot).getLastAction() == MOVE ) {
+                            ((BaseEntity)aRobot).restorePosition();
+                            ((BaseEntity)bRobot).restorePosition();
+                            ((BaseEntity)bRobot).sufferDmg(1);
+                        }
+                        else if ( ((BaseEntity)aRobot).getLastAction() == ATTACK && ((BaseEntity)aRobot).getLastAction() == WAIT ) {
+                            ((BaseEntity)aRobot).restorePosition();
+                            ((BaseEntity)bRobot).sufferDmg(1);
+                        }     
+                        else if ( ((BaseEntity)aRobot).getLastAction() == ATTACK && ((BaseEntity)aRobot).getLastAction() == ATTACK ) {
+                            ((BaseEntity)aRobot).restorePosition();
+                            ((BaseEntity)aRobot).sufferDmg(1);
+                            ((BaseEntity)bRobot).restorePosition();
+                            ((BaseEntity)bRobot).sufferDmg(1);
+                        }  
+                        else if ( ((BaseEntity)aRobot).getLastAction() == DEFEND && ((BaseEntity)aRobot).getLastAction() == DEFEND ) {
+                            ((BaseEntity)aRobot).restorePosition();
+                            ((BaseEntity)bRobot).restorePosition();
+                        }  
+                        else if ( ((BaseEntity)aRobot).getLastAction() == DEFEND && ((BaseEntity)aRobot).getLastAction() == WAIT ) {
+                            ((BaseEntity)aRobot).restorePosition();
+                        }  
+                        else if ( (((BaseEntity)aRobot).getLastAction() == DEFEND && ((BaseEntity)aRobot).getLastAction() == ATTACK )
+                            || (((BaseEntity)aRobot).getLastAction() == ATTACK && ((BaseEntity)aRobot).getLastAction() == DEFEND )){
+                            ((BaseEntity)aRobot).restorePosition();
+                            ((BaseEntity)bRobot).restorePosition();
+                        }
+                        else if ( ((BaseEntity)aRobot).getLastAction() == WAIT && ((BaseEntity)aRobot).getLastAction() == MOVE ) {
+                            ((BaseEntity)bRobot).restorePosition();
+                        }  
+                        else if ( ((BaseEntity)aRobot).getLastAction() == WAIT && ((BaseEntity)aRobot).getLastAction() == DEFEND ) {
+                            ((BaseEntity)bRobot).restorePosition();
+                        }  
+                        else if ( ((BaseEntity)aRobot).getLastAction() == WAIT && ((BaseEntity)aRobot).getLastAction() == ATTACK ) {
+                            ((BaseEntity)bRobot).restorePosition();
+                            ((BaseEntity)aRobot).sufferDmg(1);
+                        }  
                     }
                     
                     textGraphics.putString(1, 1, roundCnt + ". kör:", SGR.BOLD);
@@ -152,7 +208,19 @@ public class TableGame {
                     
                     textGraphics.putString( 1 , n+9, "\"B\" robot: " + bClassName + ".class", SGR.BOLD);
                     textGraphics.putString( 1 , n+10, "Páncél: " + ((BaseEntity)bRobot).getActualArmor() + "/" + ((BaseEntity)bRobot).getMaxArmor(), SGR.BOLD);
-
+                    
+                    //A játék végének ellnőrzése
+                    if ( !((BaseEntity)aRobot).getStatus() ) {
+                        hasWinner = true;
+                        textGraphics.putString( 1 , n+12, "--- A játék véget ért, A robot páncélja elfogyott ---", SGR.BOLD);
+                        textGraphics.putString( 1 , n+13, "A győztes: B robot", SGR.BOLD);
+                    }
+                    else if ( !((BaseEntity)bRobot).getStatus()) {
+                        hasWinner = true;
+                        textGraphics.putString( 1 , n+12, "--- A játék véget ért, B robot páncélja elfogyott ---", SGR.BOLD);
+                        textGraphics.putString( 1 , n+13, "A győztes: A robot", SGR.BOLD);
+                    }
+                    
                     terminal.flush();   
 
                     roundCnt++;
@@ -161,6 +229,20 @@ public class TableGame {
                     TimeUnit.SECONDS.sleep(5);
                     System.out.println();
                 }
+                
+            if (!hasWinner) {
+                if (((BaseEntity)aRobot).getActualArmor() > ((BaseEntity)bRobot).getActualArmor() ) {
+                    textGraphics.putString( 1 , n+12, "--- A játék véget ért, A robotnak maradt több páncélja ---", SGR.BOLD);
+                    textGraphics.putString( 1 , n+13, "A győztes: A robot", SGR.BOLD);
+                }
+                else if (((BaseEntity)bRobot).getActualArmor() > ((BaseEntity)aRobot).getActualArmor()) {
+                    textGraphics.putString( 1 , n+12, "--- A játék véget ért, B robotnak maradt több páncélja ---", SGR.BOLD);
+                    textGraphics.putString( 1 , n+13, "A győztes: B robot", SGR.BOLD);
+                }
+                else {
+                    textGraphics.putString( 1 , 2, "--- A játék döntetlen eredménnyel ért! ---", SGR.BOLD);
+                } 
+            }
                 
             } catch (IOException ex) {
                 ex.printStackTrace();
