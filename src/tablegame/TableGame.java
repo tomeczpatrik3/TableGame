@@ -79,21 +79,23 @@ public class TableGame {
             Terminal terminal = null;
             try {
                 terminal = defaultTerminalFactory.createTerminal();
-               
+
+                terminal.enterPrivateMode();
+                terminal.setCursorVisible(false);
                 
+                TextGraphics textGraphics = null;
                 //TextGraphics to write strings into console:
-                final TextGraphics textGraphics = terminal.newTextGraphics();
+                textGraphics = terminal.newTextGraphics();
                 textGraphics.setForegroundColor(TextColor.ANSI.WHITE);
                 textGraphics.setBackgroundColor(TextColor.ANSI.BLACK);
-
+                
                 //Kör számláló inicializálása:
                 int roundCnt = 0;
                 boolean hasWinner = false;
                 
-                while (!hasWinner && roundCnt <= maxRound) {
-                    terminal.clearScreen();
-                    
+                while (!hasWinner && roundCnt <= maxRound) {                    
                     System.out.println("----- " + roundCnt + ". kör: -----");
+                    
                     //Lépések, logic:
                     if (roundCnt != 0) {
                         generateRndAction(aRobot);
@@ -185,29 +187,29 @@ public class TableGame {
                     }
                     
                     textGraphics.putString(1, 1, roundCnt + ". kör:", SGR.BOLD);
-
-                    terminal.putCharacter('\n');
-                    terminal.putCharacter('\n');
+                    
                     for (int i=0; i<n+2; i++) {
-                        terminal.putCharacter(' ');
                         for (int j=0; j<m+2; j++) {
-                            if ( ((BaseEntity)aRobot).getActualPosition().getX()+1 == i && ((BaseEntity)aRobot).getActualPosition().getY()+1 == j)
-                                terminal.putCharacter('A');
-                            else if (((BaseEntity)bRobot).getActualPosition().getX()+1 == i && ((BaseEntity)bRobot).getActualPosition().getY()+1 == j)
-                                terminal.putCharacter('B');
-                            else if ( i==0 || j==0 || i==n+1 || j==m+1)
-                                terminal.putCharacter('#');
-                            else
-                                terminal.putCharacter('.');
+                            if ( ((BaseEntity)aRobot).getActualPosition().getX()+1 == i && ((BaseEntity)aRobot).getActualPosition().getY()+1 == j) {
+                                textGraphics.putString(i+1, j+3, "A", SGR.BOLD);
+                            }
+                            else if (((BaseEntity)bRobot).getActualPosition().getX()+1 == i && ((BaseEntity)bRobot).getActualPosition().getY()+1 == j) {
+                                textGraphics.putString(i+1, j+3, "B", SGR.BOLD);
+                            }    
+                            else if ( i==0 || j==0 || i==n+1 || j==m+1) {
+                                textGraphics.putString(i+1, j+3, "#", SGR.BOLD);
+                            }   
+                            else {
+                                textGraphics.putString(i+1, j+3, ".", SGR.BOLD);
+                            }   
                         }
-                        terminal.putCharacter('\n');
                     }
                     
                     textGraphics.putString( 1 , n+6, "\"A\" robot: " + aClassName + ".class", SGR.BOLD);
-                    textGraphics.putString( 1 , n+7, "Páncél: " + ((BaseEntity)aRobot).getActualArmor() + "/" + ((BaseEntity)aRobot).getMaxArmor(), SGR.BOLD);
+                    textGraphics.putString( 1 , n+7, "Páncél: " + ((BaseEntity)aRobot).getActualArmor() + "/" + ((BaseEntity)aRobot).getMaxArmor() + "                    ", SGR.BOLD);
                     
                     textGraphics.putString( 1 , n+9, "\"B\" robot: " + bClassName + ".class", SGR.BOLD);
-                    textGraphics.putString( 1 , n+10, "Páncél: " + ((BaseEntity)bRobot).getActualArmor() + "/" + ((BaseEntity)bRobot).getMaxArmor(), SGR.BOLD);
+                    textGraphics.putString( 1 , n+10, "Páncél: " + ((BaseEntity)bRobot).getActualArmor() + "/" + ((BaseEntity)bRobot).getMaxArmor() + "                    ", SGR.BOLD);
                     
                     //A játék végének ellnőrzése
                     if ( !((BaseEntity)aRobot).getStatus() ) {
@@ -220,7 +222,7 @@ public class TableGame {
                         textGraphics.putString( 1 , n+12, "--- A játék véget ért, B robot páncélja elfogyott ---", SGR.BOLD);
                         textGraphics.putString( 1 , n+13, "A győztes: A robot", SGR.BOLD);
                     }
-                    
+
                     terminal.flush();   
 
                     roundCnt++;
@@ -240,10 +242,14 @@ public class TableGame {
                     textGraphics.putString( 1 , n+13, "A győztes: B robot", SGR.BOLD);
                 }
                 else {
-                    textGraphics.putString( 1 , 2, "--- A játék döntetlen eredménnyel ért! ---", SGR.BOLD);
+                    textGraphics.putString( 1 , n+12, "--- A játék döntetlen eredménnyel ért! ---", SGR.BOLD);
                 } 
             }
-                
+            
+            textGraphics.putString( 1 , n+14, "A terminál 10 másodpercen belül bezáródik...", SGR.BOLD);
+            TimeUnit.SECONDS.sleep(10);
+            terminal.exitPrivateMode();
+            
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
@@ -255,85 +261,6 @@ public class TableGame {
         }
         
     } 
-    
-    public static Position getPosition(Class clazz, Object obj) {
-        try {
-            Method getPos = clazz.getMethod("getPosition", new Class[]{});
-            return (Position)getPos.invoke(obj, null);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-    
-    public static int getActualArmor(Class clazz, Object obj) {
-        try {
-            /*
-                Egy oylan fgv-t keresünk, aminek a neve: getActualArmor
-                és nincs paramétere ( new Class[]{} )
-            */
-            Method getActualArmor = clazz.getMethod("getActualArmor", new Class[]{});
-            return (int)getActualArmor.invoke(obj, null);
-        } catch (Exception e) {
-            return 0;
-        } 
-    }
-    
-    public static int getMaxArmor(Class clazz, Object obj) {
-        try {
-            Method getMaxArmor = clazz.getMethod("getMaxArmor", new Class[]{});
-            return (int)getMaxArmor.invoke(obj, null);
-        } catch (Exception e) {
-            return 0;
-        }         
-    }
-    
-    public static void callMove(Class clazz, Object obj, Direction direction) {
-        try {
-            Method move = clazz.getMethod("move", new Class[]{Direction.class});
-            move.invoke(obj, direction);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }         
-    }
-    
-    public static void callAttack(Class clazz, Object obj, Direction direction) {
-        try {
-            Method attack = clazz.getMethod("attack", new Class[]{Direction.class});
-            attack.invoke(obj, direction);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }         
-    }
-    
-    public static void callDefend(Class clazz, Object obj, Direction direction) {
-        try {
-            Method defend = clazz.getMethod("defend", new Class[]{Direction.class});
-            defend.invoke(obj, direction);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }         
-    }
-    
-    public static void callWait(Class clazz, Object obj) {
-        try {
-            Method wait = clazz.getMethod("waitNextRound", new Class[]{});
-            wait.invoke(obj, null);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }         
-    }
-    
-    public static String callGetName(Class clazz, Object obj) {
-        try {
-            Method getName = clazz.getMethod("getName", new Class[]{});
-            return (String)getName.invoke(obj, null);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-       
-    }
     
     /*
         A paraméterben megadott akció végrehajtása az adott robottal
