@@ -1,4 +1,4 @@
-package tablegame.model;
+package tablegame.utils;
 
 public class Position {
     private int x;  //X koord.

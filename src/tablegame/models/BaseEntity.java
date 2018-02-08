@@ -1,6 +1,9 @@
-package tablegame.model;
+package tablegame.models;
 
-import static tablegame.model.Action.*;
+import tablegame.enums.Direction;
+import tablegame.enums.Action;
+import tablegame.utils.Position;
+import static tablegame.enums.Action.*;
 
 public class BaseEntity implements BaseInterface {
     //A robot nevének tárolására:
@@ -252,7 +255,7 @@ public class BaseEntity implements BaseInterface {
         Státusz lekérdezése:
     */
     @Override
-    public boolean getStatus() {
+    public boolean isAlive() {
         return this.isAlive;
     }
     

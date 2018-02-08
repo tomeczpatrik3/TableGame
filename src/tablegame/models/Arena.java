@@ -1,10 +1,11 @@
-package tablegame.model;
+package tablegame.models;
 
+import tablegame.utils.Position;
 import java.util.Random;
 
 public class Arena {
-    int n; //Sorok száma
-    int m; //Oszlopok száma
+    private int n; //Sorok száma
+    private int m; //Oszlopok száma
     
     public Arena (int n, int m) {
         this.n = n;

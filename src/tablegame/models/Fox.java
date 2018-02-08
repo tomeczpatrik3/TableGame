@@ -1,4 +1,6 @@
-package tablegame.model;
+package tablegame.models;
+
+import tablegame.utils.Position;
 
 public class Fox extends BaseEntity{
     public Fox(String name, Arena arena, Position pos, int armor) {

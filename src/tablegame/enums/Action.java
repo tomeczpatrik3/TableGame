@@ -1,4 +1,4 @@
-package tablegame.model;
+package tablegame.enums;
 
 /*
     Felsorolási típus a lehetséges "akciók" számára:

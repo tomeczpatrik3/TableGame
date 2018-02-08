@@ -3,16 +3,17 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/range/Desktop/TableGame/src/tablegame/TableGame.java</file>
-            <file>file:/C:/Users/range/Desktop/TableGame/src/tablegame/model/Position.java</file>
-            <file>file:/C:/Users/range/Desktop/TableGame/src/tablegame/model/Fox.java</file>
-            <file>file:/C:/Users/range/Desktop/TableGame/src/tablegame/model/Arena.java</file>
-            <file>file:/C:/Users/range/Desktop/TableGame/src/tablegame/model/Rabbit.java</file>
-            <file>file:/C:/Users/range/Desktop/TableGame/src/tablegame/model/BaseInterface.java</file>
-            <file>file:/C:/Users/range/Desktop/TableGame/src/tablegame/model/Wolf.java</file>
-            <file>file:/C:/Users/range/Desktop/TableGame/src/tablegame/model/BaseEntity.java</file>
-            <file>file:/C:/Users/range/Desktop/TableGame/src/tablegame/model/Direction.java</file>
-            <file>file:/C:/Users/range/Desktop/TableGame/src/tablegame/model/Action.java</file>
+            <file>file:/C:/Users/range/Desktop/TableGame/src/tablegame/models/Wolf.java</file>
+            <file>file:/C:/Users/range/Desktop/TableGame/src/tablegame/utils/Position.java</file>
+            <file>file:/C:/Users/range/Desktop/TableGame/src/tablegame/models/BaseInterface.java</file>
+            <file>file:/C:/Users/range/Desktop/TableGame/src/tablegame/Main.java</file>
+            <file>file:/C:/Users/range/Desktop/TableGame/src/tablegame/models/Rabbit.java</file>
+            <file>file:/C:/Users/range/Desktop/TableGame/src/tablegame/enums/Direction.java</file>
+            <file>file:/C:/Users/range/Desktop/TableGame/src/tablegame/models/Fox.java</file>
+            <file>file:/C:/Users/range/Desktop/TableGame/src/tablegame/Game.java</file>
+            <file>file:/C:/Users/range/Desktop/TableGame/src/tablegame/enums/Action.java</file>
+            <file>file:/C:/Users/range/Desktop/TableGame/src/tablegame/models/BaseEntity.java</file>
+            <file>file:/C:/Users/range/Desktop/TableGame/src/tablegame/models/Arena.java</file>
         </group>
     </open-files>
 </project-private>
